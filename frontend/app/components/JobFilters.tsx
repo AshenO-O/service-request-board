@@ -17,7 +17,7 @@ export default function JobFilters({ selectedCategory, onCategoryChange }: JobFi
             onClick={() => onCategoryChange(category === 'All Jobs' ? '' : category)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all
               ${selectedCategory === (category === 'All Jobs' ? '' : category)
-                ? 'bg-blue-900 text-white'
+                ? 'bg-trade-primary text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >

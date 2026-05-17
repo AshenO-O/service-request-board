@@ -10,15 +10,7 @@ interface JobCardProps {
 const statusColors = {
   'Open': 'bg-green-100 text-green-800',
   'In Progress': 'bg-yellow-100 text-yellow-800',
-  'Closed': 'bg-gray-100 text-gray-800',
-};
-
-const categoryIcons: Record<string, string> = {
-  'Plumbing': 'plumbing',
-  'Electrical': 'electrical_services',
-  'Painting': 'brush',
-  'Joinery': 'carpenter',
-  'Other': 'handyman',
+  'Closed': 'bg-gray-100 text-gray-600',
 };
 
 export default function JobCard({ job }: JobCardProps) {
@@ -53,12 +45,12 @@ export default function JobCard({ job }: JobCardProps) {
       
       <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
         <div className="flex items-center gap-1">
-          <span className="material-symbols-outlined text-blue-900 text-lg">price_check</span>
-          <span className="text-lg font-bold text-blue-900">{budget}</span>
+          <span className="material-symbols-outlined text-trade-primary text-lg">price_check</span>
+          <span className="text-lg font-bold text-trade-primary">{budget}</span>
         </div>
         <Link
           href={`/jobs/${job._id}`}
-          className="text-blue-900 hover:text-blue-700 text-sm font-semibold flex items-center gap-1"
+          className="text-trade-primary hover:text-trade-primary-light text-sm font-semibold flex items-center gap-1"
         >
           View Details
           <span className="material-symbols-outlined text-sm">arrow_forward</span>

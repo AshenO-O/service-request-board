@@ -38,7 +38,7 @@ export default function Home() {
       <Header />
       <main className="pt-24 pb-16 px-4 md:px-8 max-w-6xl mx-auto">
         {/* Hero Section */}
-        <div className="mb-10 text-center md:text-left">
+        <div className="mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Available Opportunities
           </h1>
@@ -55,7 +55,7 @@ export default function Home() {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
@@ -63,7 +63,7 @@ export default function Home() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-trade-primary"></div>
             <p className="mt-2 text-gray-600">Loading opportunities...</p>
           </div>
         )}
@@ -76,16 +76,16 @@ export default function Home() {
                 <span className="material-symbols-outlined text-5xl text-gray-400 mb-3">
                   work_history
                 </span>
-                <p className="text-gray-500 text-lg">No job requests found</p>
+                <p className="text-gray-600 text-lg mb-4">No job requests found</p>
                 <button
                   onClick={() => window.location.href = '/jobs/new'}
-                  className="inline-block mt-4 text-blue-900 hover:text-blue-700 font-semibold"
+                  className="text-trade-primary hover:text-trade-primary-light font-semibold inline-flex items-center gap-1"
                 >
                   Post the first job request →
                 </button>
               </div>
             ) : (
-              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {jobs.map((job) => (
                   <JobCard key={job._id} job={job} />
                 ))}
@@ -93,33 +93,7 @@ export default function Home() {
             )}
           </>
         )}
-
-        {/* Load More Button */}
-        {jobs.length > 0 && (
-          <div className="text-center mt-10">
-            <button className="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50 transition-all">
-              Load more requests
-            </button>
-          </div>
-        )}
       </main>
-
-      {/* Footer */}
-      <footer className="w-full py-8 px-4 md:px-8 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-center md:text-left">
-            <span className="text-xl font-bold text-blue-900">TradeConnect</span>
-            <p className="text-sm text-gray-600 mt-1">
-              © 2024 TradeConnect Inc. Reliable. Transparent. Efficient.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6">
-            <a href="#" className="text-sm text-gray-600 hover:text-blue-900">Privacy Policy</a>
-            <a href="#" className="text-sm text-gray-600 hover:text-blue-900">Terms of Service</a>
-            <a href="#" className="text-sm text-gray-600 hover:text-blue-900">Contact Support</a>
-          </div>
-        </div>
-      </footer>
     </>
   );
 }

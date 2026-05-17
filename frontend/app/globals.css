@@ -2,24 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #00288e;
-  --primary-container: #1e40af;
-  --secondary: #505f76;
-  --surface: #fbf8ff;
-  --surface-container-low: #f4f2fc;
-  --outline: #757684;
-  --outline-variant: #c4c5d5;
-}
-
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #fbf8ff;
+  background-color: #f5f5f5;
   color: #1a1b22;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-@layer utilities {
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
+/* Ensure footer stays at bottom */
+main {
+  flex: 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

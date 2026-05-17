@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Header from '../../components/Header';
 import { api } from '../../lib/api';
 
-const categories = ['Plumbing', 'Electrical', 'Painting', 'Joinery', 'Other'];
+const categories = ['Plumbing', 'Electrical', 'Painting', 'Joinery', 'Landscaping', 'Roofing', 'Other'];
 
 export default function NewJobPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function NewJobPage() {
     location: '',
     contactName: '',
     contactEmail: '',
+    phone: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -44,121 +46,185 @@ export default function NewJobPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Create New Job Request</h1>
-            <Link href="/" className="text-gray-600 hover:text-gray-800">
-              ← Back
-            </Link>
+    <>
+      <Header />
+      <main className="pt-24 pb-16 px-4 md:px-8 max-w-4xl mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Post a New Service Request</h1>
+          <p className="text-gray-600">Connect with qualified local tradespeople by providing details about your project.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              {/* Job Title */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-1">Job Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
+                  placeholder="e.g., Fix leaking kitchen faucet"
+                />
+                <p className="text-xs text-gray-500 mt-1">A concise title helps experts find your request faster.</p>
+              </div>
+
+              {/* Category & Location */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1">Category</label>
+                  <select
+                    name="category"
+                    required
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    required
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
+                    placeholder="Street address or city"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-1">Detailed Description</label>
+                <textarea
+                  name="description"
+                  required
+                  rows={5}
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
+                  placeholder="Describe the problem, the required outcome, and any specific requirements..."
+                />
+              </div>
+
+              {/* Contact Info */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      name="contactName"
+                      required
+                      value={formData.contactName}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
+                      placeholder="Your full name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      name="contactEmail"
+                      required
+                      value={formData.contactEmail}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-1">Phone Number (Optional)</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-900"
+                      placeholder="+1 (555) 000-0000"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
+                <Link
+                  href="/"
+                  className="px-6 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all text-center"
+                >
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-900 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {loading ? 'Posting...' : 'Post Job'}
+                </button>
+              </div>
+            </form>
           </div>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-2">Title *</label>
-              <input
-                type="text"
-                name="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Need plumber for leaking tap"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-2">Description *</label>
-              <textarea
-                name="description"
-                required
-                rows={4}
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Describe the issue in detail..."
-              />
+          {/* Sidebar Tips */}
+          <div className="space-y-6">
+            <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">Why Post on TradeConnect?</h3>
+              <ul className="space-y-3">
+                <li className="flex gap-2 text-sm">
+                  <span className="material-symbols-outlined text-blue-900 text-lg">verified_user</span>
+                  <span>Verified professionals with background checks</span>
+                </li>
+                <li className="flex gap-2 text-sm">
+                  <span className="material-symbols-outlined text-blue-900 text-lg">payments</span>
+                  <span>Secure payment held in escrow until completion</span>
+                </li>
+                <li className="flex gap-2 text-sm">
+                  <span className="material-symbols-outlined text-blue-900 text-lg">support_agent</span>
+                  <span>24/7 customer support for every project</span>
+                </li>
+              </ul>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-2">Category *</label>
-              <select
-                name="category"
-                required
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Posting Tips</h3>
+              <p className="text-sm text-gray-600 mb-3">A great job description increases response rate by up to 40%.</p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-green-600 text-base">check_circle</span>
+                  Mention specific tools needed
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-green-600 text-base">check_circle</span>
+                  Specify your preferred start date
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-green-600 text-base">check_circle</span>
+                  Upload photos if possible
+                </li>
+              </ul>
             </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-2">Location *</label>
-              <input
-                type="text"
-                name="location"
-                required
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Glasgow, Edinburgh"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-2">Contact Name *</label>
-              <input
-                type="text"
-                name="contactName"
-                required
-                value={formData.contactName}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Your full name"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-2">Contact Email *</label>
-              <input
-                type="email"
-                name="contactEmail"
-                required
-                value={formData.contactEmail}
-                onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="your@email.com"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300"
-              >
-                {loading ? 'Creating...' : 'Create Job Request'}
-              </button>
-              <Link
-                href="/"
-                className="flex-1 text-center bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </Link>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Service Request Board",
-  description: "Post and browse service requests",
+  title: "TradeConnect - Service Request Board",
+  description: "Connect with qualified local tradespeople for your home service needs",
 };
 
 export default function RootLayout({
@@ -13,9 +13,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        {children}
-      </body>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }

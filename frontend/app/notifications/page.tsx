@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header';
+import { useAuth } from '../../context/AuthContext';
 
 interface Notification {
   id: string;
@@ -9,36 +10,49 @@ interface Notification {
   message: string;
   date: string;
   read: boolean;
-  type: 'message' | 'status' | 'job';
+  type: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'New Message Received',
-      message: 'John Smith sent you a message about "fridge repair"',
-      date: '2024-05-18T10:30:00',
-      read: false,
-      type: 'message',
-    },
-    {
-      id: '2',
-      title: 'Job Status Updated',
-      message: 'Your job "pipe leaking" has been marked as In Progress',
-      date: '2024-05-17T15:20:00',
-      read: false,
-      type: 'status',
-    },
-    {
-      id: '3',
-      title: 'New Job Posted',
-      message: 'Your job "fridge repair" has been posted successfully',
-      date: '2024-05-16T09:00:00',
-      read: true,
-      type: 'job',
-    },
-  ]);
+  const { user, token } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      // For now, use sample data since backend notifications endpoint not yet created
+      // In production, fetch from API: GET /api/notifications
+      const sampleNotifications = [
+        {
+          id: '1',
+          title: 'New Application Received',
+          message: 'A tradesperson has applied to your job "fridge repair"',
+          date: new Date().toISOString(),
+          read: false,
+          type: 'application',
+        },
+        {
+          id: '2',
+          title: 'Application Accepted!',
+          message: 'Your application for "pipe leaking" has been accepted',
+          date: new Date().toISOString(),
+          read: false,
+          type: 'application_accepted',
+        },
+      ];
+      setNotifications(sampleNotifications);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const markAsRead = (id: string) => {
     setNotifications(notifications.map(notif => 
@@ -46,15 +60,11 @@ export default function NotificationsPage() {
     ));
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({ ...notif, read: true })));
-  };
-
   const getIcon = (type: string) => {
     switch(type) {
-      case 'message': return 'chat';
-      case 'status': return 'sync';
-      default: return 'work';
+      case 'application': return 'handshake';
+      case 'application_accepted': return 'check_circle';
+      default: return 'notifications';
     }
   };
 
@@ -67,11 +77,11 @@ export default function NotificationsPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
-            <p className="text-gray-600">Stay updated with your job requests and messages</p>
+            <p className="text-gray-600">Stay updated with your job requests and applications</p>
           </div>
           {unreadCount > 0 && (
             <button
-              onClick={markAllAsRead}
+              onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
               className="text-sm text-trade-primary hover:text-trade-primary-light font-medium"
             >
               Mark all as read
@@ -80,7 +90,11 @@ export default function NotificationsPage() {
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-trade-primary"></div>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="text-center py-16">
               <span className="material-symbols-outlined text-5xl text-gray-400 mb-3">notifications_off</span>
               <h2 className="text-xl font-semibold text-gray-700 mb-2">No notifications yet</h2>
@@ -97,8 +111,8 @@ export default function NotificationsPage() {
                   <div className="flex gap-3">
                     <div className="flex-shrink-0">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        notification.type === 'message' ? 'bg-blue-100' :
-                        notification.type === 'status' ? 'bg-yellow-100' : 'bg-green-100'
+                        notification.type === 'application' ? 'bg-blue-100' :
+                        notification.type === 'application_accepted' ? 'bg-green-100' : 'bg-gray-100'
                       }`}>
                         <span className="material-symbols-outlined text-lg text-trade-primary">
                           {getIcon(notification.type)}

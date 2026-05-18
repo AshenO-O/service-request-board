@@ -8,7 +8,8 @@ export interface Job {
   contactEmail: string;
   status: 'Open' | 'In Progress' | 'Closed';
   createdAt: string;
-  budget?: string;  // Optional for display
+  budget?: string;
+  userId?: string;  
 }
 
 export interface CreateJobData {
@@ -18,5 +19,5 @@ export interface CreateJobData {
   location: string;
   contactName: string;
   contactEmail: string;
-  phone?: string;  // Added phone field
+  phone?: string;
 }

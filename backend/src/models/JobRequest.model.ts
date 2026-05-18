@@ -9,6 +9,7 @@ export interface IJobRequest {
   contactEmail: string;
   status: 'Open' | 'In Progress' | 'Closed';
   createdAt: Date;
+  userId: mongoose.Types.ObjectId;
 }
 
 const jobRequestSchema = new mongoose.Schema<IJobRequest>({
@@ -24,7 +25,7 @@ const jobRequestSchema = new mongoose.Schema<IJobRequest>({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: ['Plumbing', 'Electrical', 'Painting', 'Joinery', 'Other'],
+    enum: ['Plumbing', 'Electrical', 'Painting', 'Joinery', 'Landscaping', 'Roofing', 'Other'],
   },
   location: {
     type: String,
@@ -47,6 +48,11 @@ const jobRequestSchema = new mongoose.Schema<IJobRequest>({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false,
   },
 });
 

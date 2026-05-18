@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
@@ -33,24 +33,16 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
-
-  useEffect(() => {
-    if (selectedJob) {
-      fetchMessages(selectedJob);
-    }
-  }, [selectedJob]);
-
+  // Fetch all conversations
   const fetchConversations = async () => {
     try {
       const res = await fetch(`${API_URL}/api/messages/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
-      // Ensure data is an array
       setConversations(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
@@ -60,6 +52,7 @@ export default function MessagesPage() {
     }
   };
 
+  // Fetch messages for selected job
   const fetchMessages = async (jobId: string) => {
     try {
       const res = await fetch(`${API_URL}/api/messages/conversation/${jobId}`, {
@@ -67,16 +60,26 @@ export default function MessagesPage() {
       });
       const data = await res.json();
       setMessages(Array.isArray(data) ? data : []);
+      // Scroll to bottom after messages load
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
       setMessages([]);
     }
   };
 
+  // Send a new message
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedJob) return;
     
     setSending(true);
+    const messageToSend = newMessage;
+    setNewMessage(''); // Clear input immediately for better UX
+    
     try {
       const res = await fetch(`${API_URL}/api/messages/send`, {
         method: 'POST',
@@ -86,24 +89,31 @@ export default function MessagesPage() {
         },
         body: JSON.stringify({
           jobId: selectedJob,
-          message: newMessage,
+          message: messageToSend,
         }),
       });
       
+      const data = await res.json();
+      
       if (res.ok) {
-        setNewMessage('');
-        fetchMessages(selectedJob);
-        fetchConversations();
+        // Refresh messages and conversations
+        await fetchMessages(selectedJob);
+        await fetchConversations();
       } else {
-        const data = await res.json();
         console.error('Failed to send message:', data);
+        alert(data.message || 'Failed to send message');
+        // Restore the message if failed
+        setNewMessage(messageToSend);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      alert('Error sending message. Please check your connection.');
+      setNewMessage(messageToSend);
     }
     setSending(false);
   };
 
+  // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -115,13 +125,74 @@ export default function MessagesPage() {
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
   };
+
+  // Get full timestamp for tooltip
+  const getFullTimestamp = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  // Load messages when a conversation is selected
+  useEffect(() => {
+    if (selectedJob) {
+      fetchMessages(selectedJob);
+    }
+  }, [selectedJob]);
+
+  // Auto-refresh messages every 5 seconds when a conversation is open
+  useEffect(() => {
+    if (selectedJob) {
+      const interval = setInterval(() => {
+        fetchMessages(selectedJob);
+        fetchConversations();
+      }, 5000);
+      setRefreshInterval(interval);
+      return () => {
+        if (interval) clearInterval(interval);
+      };
+    } else {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        setRefreshInterval(null);
+      }
+    }
+  }, [selectedJob]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
+  }, [refreshInterval]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   // Safely get selected conversation
   const selectedConversation = conversations && Array.isArray(conversations) 
     ? conversations.find(c => c.jobId === selectedJob) 
     : null;
+
+  // Handle Enter key press
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   return (
     <>
@@ -144,12 +215,21 @@ export default function MessagesPage() {
               </div>
               <div className="flex-1 overflow-y-auto">
                 {loading ? (
-                  <div className="p-8 text-center text-gray-500">Loading...</div>
+                  <div className="p-8 text-center text-gray-500">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-trade-primary"></div>
+                    <p className="mt-2">Loading conversations...</p>
+                  </div>
                 ) : !Array.isArray(conversations) || conversations.length === 0 ? (
                   <div className="p-8 text-center">
                     <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">chat</span>
                     <p className="text-gray-500">No conversations yet</p>
                     <p className="text-sm text-gray-400 mt-1">When you apply to jobs or receive messages, they'll appear here</p>
+                    <Link 
+                      href="/"
+                      className="inline-block mt-4 text-trade-primary hover:underline text-sm"
+                    >
+                      Browse Jobs →
+                    </Link>
                   </div>
                 ) : (
                   conversations.map((conv) => (
@@ -163,7 +243,7 @@ export default function MessagesPage() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 truncate">{conv.jobTitle}</h3>
-                          <p className="text-sm text-gray-500 truncate mt-1">{conv.lastMessage}</p>
+                          <p className="text-sm text-gray-500 truncate mt-1">{conv.lastMessage || 'No messages yet'}</p>
                           <p className="text-xs text-gray-400 mt-1">{formatDate(conv.lastMessageDate)}</p>
                         </div>
                         {conv.unreadCount > 0 && (
@@ -200,10 +280,12 @@ export default function MessagesPage() {
                   </div>
                   
                   {/* Messages Area */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
                     {!Array.isArray(messages) || messages.length === 0 ? (
                       <div className="text-center py-8">
-                        <p className="text-gray-500">No messages yet. Start the conversation!</p>
+                        <span className="material-symbols-outlined text-3xl text-gray-300 mb-2">chat</span>
+                        <p className="text-gray-500">No messages yet</p>
+                        <p className="text-sm text-gray-400 mt-1">Send a message to start the conversation</p>
                       </div>
                     ) : (
                       messages.map((msg) => {
@@ -218,17 +300,20 @@ export default function MessagesPage() {
                                 className={`rounded-lg p-3 ${
                                   isFromMe
                                     ? 'bg-trade-primary text-white'
-                                    : 'bg-gray-100 text-gray-900'
+                                    : 'bg-white text-gray-900 border border-gray-200'
                                 }`}
                               >
-                                <p className="text-sm">{msg.message}</p>
+                                <p className="text-sm break-words">{msg.message}</p>
                                 {msg.bidAmount && (
-                                  <p className={`text-xs mt-1 ${isFromMe ? 'text-blue-100' : 'text-gray-500'}`}>
-                                    Bid: LKR {msg.bidAmount.toLocaleString()}
+                                  <p className={`text-xs mt-1 ${isFromMe ? 'text-blue-100' : 'text-trade-primary font-medium'}`}>
+                                    💰 Bid: LKR {msg.bidAmount.toLocaleString()}
                                   </p>
                                 )}
                               </div>
-                              <p className={`text-xs text-gray-400 mt-1 ${isFromMe ? 'text-right' : 'text-left'}`}>
+                              <p 
+                                className={`text-xs text-gray-400 mt-1 ${isFromMe ? 'text-right' : 'text-left'} cursor-help`}
+                                title={getFullTimestamp(msg.createdAt)}
+                              >
                                 {formatDate(msg.createdAt)}
                               </p>
                             </div>
@@ -236,6 +321,7 @@ export default function MessagesPage() {
                         );
                       })
                     )}
+                    <div ref={messagesEndRef} />
                   </div>
                   
                   {/* Message Input */}
@@ -245,9 +331,10 @@ export default function MessagesPage() {
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                        placeholder="Type your message..."
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type your message... Press Enter to send"
                         className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-trade-primary focus:border-transparent"
+                        disabled={sending}
                       />
                       <button
                         onClick={sendMessage}
@@ -255,9 +342,12 @@ export default function MessagesPage() {
                         className="bg-trade-primary text-white px-5 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-1"
                       >
                         <span className="material-symbols-outlined text-base">send</span>
-                        Send
+                        {sending ? 'Sending...' : 'Send'}
                       </button>
                     </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Messages are delivered instantly. Both parties can see all messages.
+                    </p>
                   </div>
                 </>
               )}

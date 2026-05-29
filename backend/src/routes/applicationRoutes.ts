@@ -1,9 +1,9 @@
 import express from 'express';
-import { 
-  applyToJob, 
-  getMyApplications, 
-  acceptApplication,
-  getJobApplications 
+import {
+    applyToJob,
+    getMyApplications,
+    acceptApplication,
+    getJobApplications
 } from '../controllers/applicationController';
 import { auth } from '../middleware/auth';
 
